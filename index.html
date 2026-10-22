@@ -193,6 +193,81 @@ header button{padding:7px 9px;font-size:9px}
 .flash{position:fixed;inset:0;pointer-events:none;z-index:40;animation:flash .5s steps(3) forwards}
 @keyframes flash{from{background:rgba(224,90,79,.4)}to{background:transparent}}
 
+
+/* gacha */
+.card .rgem{position:absolute;right:5px;bottom:5px;width:10px;height:10px;background:var(--rc);transform:rotate(45deg);border:2px solid #000}
+.card.rr-rare{border-color:var(--cc);box-shadow:3px 3px 0 #000,0 0 0 2px var(--rc) inset}
+.card.rr-epic{box-shadow:3px 3px 0 #000,0 0 0 2px var(--rc) inset,0 0 12px rgba(192,112,255,.5)}
+.card.rr-legendary{box-shadow:3px 3px 0 #000,0 0 0 2px var(--rc) inset;animation:legend 1.2s steps(4) infinite}
+@keyframes legend{50%{box-shadow:3px 3px 0 #000,0 0 0 2px #fff3b0 inset,0 0 18px rgba(255,179,64,.8)}}
+.curbar{display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+.cur{display:inline-flex;align-items:center;gap:4px;font-family:var(--px);font-size:10px;background:#0b0c14;border:2px solid var(--line);padding:4px 7px}
+.cur img{width:16px;height:16px}
+.curbar.hdr .cur{font-size:8px;padding:3px 5px}
+.modal .panel.coll{max-width:1100px;padding:14px}
+.collhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.collhead h2{margin-right:auto}
+#collTabs{margin-bottom:0}
+#collBody{border:3px solid var(--line);border-top:none;padding:14px;min-height:300px;background:var(--panel)}
+.small{font-size:18px}
+.packzone{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.bigpack img{width:140px;height:140px;animation:bob 1.2s steps(2) infinite}
+img.mini{width:16px;height:16px;display:inline-block}
+.backup button{font-size:8px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.filters .f{font-size:8px;padding:6px 8px;box-shadow:2px 2px 0 #000}
+.filters .f.on{background:var(--gold);color:#000;border-color:#fff3b0}
+.filters .hsel{display:flex;align-items:center;gap:6px}
+.filters .hsel img{width:24px;height:24px}
+.filters .hsel.on{background:var(--hc)}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:10px}
+.cslot{display:flex;flex-direction:column;align-items:center;gap:6px}
+.cslot.missing .card{filter:grayscale(1) brightness(.55)}
+.cslot .own{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:17px}
+.craft{font-size:8px;padding:5px 7px;display:inline-flex;align-items:center;gap:3px}
+.craft img{width:12px;height:12px}
+.deckhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 12px}
+.deckhead button.on,.deckpick button.on{background:var(--gold);color:#000;border-color:#fff3b0}
+.dbuild{display:grid;grid-template-columns:300px 1fr;gap:14px;align-items:start}
+.dlist{padding:10px}
+.dcount{font-family:var(--px);font-size:16px;color:var(--red)}
+.okc{color:var(--green)!important}.bad{color:#ff9a8f}
+.drow{display:flex;align-items:center;gap:8px;padding:3px 0;border-bottom:2px solid var(--line);font-size:19px}
+.drow span:nth-child(2){flex:1}
+.rdot{width:9px;height:9px;transform:rotate(45deg);border:1px solid #000;flex:none}
+.mini-b{padding:2px 8px;font-size:10px;box-shadow:2px 2px 0 #000}
+.dpool{display:flex;flex-wrap:wrap;gap:12px}
+.padd{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.padd:hover .card{transform:translateY(-4px);border-color:#fff}
+.padd.used{opacity:.4;cursor:default}
+.padd .left{font-family:var(--px);font-size:7px;color:var(--gold)}
+.deckpick{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.deckpick button{font-size:8px;padding:7px 8px}
+.reward{display:flex;align-items:center;gap:8px;font-family:var(--px);font-size:11px;color:var(--cyan)}
+.reward img{width:18px;height:18px}.reward button{font-size:8px;padding:6px 8px}
+#packOv{flex-direction:column;justify-content:flex-start;overflow-y:auto;background:rgba(5,6,12,.96);padding-top:28px}
+.small img.sp{width:14px;height:14px;display:inline-block;vertical-align:-2px}
+#packStage{text-align:center;max-width:820px;width:100%}
+.pcards{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.pc{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px}
+.pc.back{cursor:pointer}
+.cardback{width:132px;height:188px;border:3px solid var(--gold);background:repeating-linear-gradient(45deg,#4f2a8a 0 6px,#3a1f68 6px 12px);display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 #000;animation:wiggle 1s steps(2) infinite}
+.cardback img{width:72px;height:72px}
+@keyframes wiggle{50%{transform:rotate(-2deg) translateY(-3px)}}
+.pc.back:hover .cardback{border-color:#fff}
+.ptag{font-family:var(--px);font-size:9px;display:flex;align-items:center;gap:4px}
+.ptag img{width:12px;height:12px}
+.card.flipin{animation:flipin .35s steps(4)}
+@keyframes flipin{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.pc.r-legendary .card{transform:scale(1.06)}
+.goldflash{position:fixed;inset:0;pointer-events:none;z-index:70;animation:gflash .9s steps(5) forwards}
+@keyframes gflash{from{background:rgba(255,210,63,.65)}to{background:transparent}}
+@media (max-width:900px){
+  .dbuild{grid-template-columns:1fr}
+  .cgrid{grid-template-columns:repeat(auto-fill,minmax(122px,1fr))}
+  .cardback{width:104px;height:150px}
+  .curbar.hdr{display:none}
+}
 @media (max-width:900px){
   #room{grid-template-columns:1fr;padding:8px;gap:10px}
   #side{position:static;max-height:none}
@@ -220,7 +295,8 @@ header button{padding:7px 9px;font-size:9px}
       <button id="joinBtn">Join room</button>
     </div>
     <div class="err" id="homeErr"></div>
-    <button class="ghost" id="rulesBtn1" style="margin-top:6px">How to play</button>
+    <div class="row" style="margin-top:6px"><button id="collBtn1">Collection</button><button class="ghost" id="rulesBtn1">How to play</button></div>
+    <div class="curbar" style="margin-top:10px"></div>
     <div class="foot">Peer-to-peer. No accounts. The host keeps their tab open.</div>
   </div>
 </div>
@@ -230,6 +306,7 @@ header button{padding:7px 9px;font-size:9px}
     <div class="logo-s">BONAMAZE</div>
     <span class="muted" style="font-size:18px">Room</span><span class="code" id="roomCode">----</span>
     <button id="copyBtn">Copy link</button>
+    <span class="curbar hdr"></span><button id="collBtn2">Collection</button>
     <button id="muteBtn">♪ On</button>
     <button id="rulesBtn2">Rules</button>
   </header>
@@ -272,9 +349,19 @@ header button{padding:7px 9px;font-size:9px}
   </div>
 </div>
 
+
+<div class="modal hide" id="coll">
+  <div class="panel coll">
+    <div class="collhead"><h2>COLLECTION</h2><span class="curbar"></span><button id="collClose">Close</button></div>
+    <div class="tabs" id="collTabs"><button data-t="packs" class="on">Packs</button><button data-t="cards">Cards</button><button data-t="decks">Decks</button></div>
+    <div id="collBody"></div>
+  </div>
+</div>
+<div class="modal hide" id="packOv"><div id="packStage"></div></div>
 <script src="peerjs.min.js"></script>
 <script src="cards.js"></script>
 <script src="engine.js"></script>
+<script src="collection.js"></script>
 <script>
 (() => {
 'use strict';
@@ -298,6 +385,9 @@ const ICONS = {
   deck: ['.pppppp.', 'pPPPPPPp', 'pPyPPyPp', 'pPPPPPPp', 'pPyPPyPp', 'pPPPPPPp', '.pppppp.', '........'],
   hand: ['.w.w.w..', '.w.w.w..', '.wwwww.w', '.wwwwwww', '.wwwwww.', '.wwwwww.', '..wwww..', '........'],
   bubble: ['..cccc..', '.c....c.', 'c..w...c', 'c.w....c', 'c......c', 'c......c', '.c....c.', '..cccc..'],
+  gem: ['...cc...', '..cwcc..', '.cwcccc.', 'cccccccc', '.cccccc.', '..cccc..', '...cc...', '........'],
+  shard: ['...p....', '..pPp...', '.pPwPp..', 'pPPPPPp.', '.pPPPp..', '..pPp...', '...p....', '........'],
+  pack: ['...yyyyyyyyyy...', '..pppppppppppp..', '..pPPPPPPPPPPp..', '..pPPPPyyPPPPp..', '..pPPPyyyyPPPp..', '..pPyyyyyyyyPp..', '..pPPyyyyyyPPp..', '..pPPPyyyyPPPp..', '..pPPyyPPyyPPp..', '..pPyyPPPPyyPp..', '..pPPPPPPPPPPp..', '..pPwPwPwPwPPp..', '..pPPPPPPPPPPp..', '..pppppppppppp..', '...yyyyyyyyyy...', '................'],
   skull: ['..wwww..', '.wwwwww.', 'wkkwwkkw', 'wkkwwkkw', 'wwwkkwww', '.wwwwww.', '.w.w.w..', '........'],
 };
 const cache = {};
@@ -318,7 +408,7 @@ const heroImg = (id, cls) => HERO[id] ? `<img class="sp ${cls || ''}" src="${spr
 function cardHtml(key, opts) {
   opts = opts || {};
   const d = DEF[key]; if (!d) return '';
-  const h = HERO[d.hero];
+  const h = HERO[d.hero] || Cards.NEUTRAL;
   const sym = [];
   if (d.attack) sym.push(`<span>${icon('sword')}${d.attack > 1 ? '×' + d.attack : ''}</span>`);
   if (d.shield) sym.push(`<span>${icon('shield')}${d.shield}</span>`);
@@ -326,12 +416,14 @@ function cardHtml(key, opts) {
   if (d.draw) sym.push(`<span>${icon('draw')}${d.draw > 1 ? '×' + d.draw : ''}</span>`);
   if (d.again) sym.push(`<span>${icon('bolt')}${d.again > 1 ? '×' + d.again : ''}</span>`);
   if (d.special) sym.push(`<span>${icon('star')}</span>`);
-  return `<div class="card ${opts.cls || ''}" style="--cc:${h.color}" ${opts.uid != null ? `data-uid="${opts.uid}"` : ''}>
+  const rr = Cards.RARITY[d.rarity] || Cards.RARITY.basic;
+  return `<div class="card ${opts.cls || ''} rr-${d.rarity}" style="--cc:${h.color};--rc:${rr.color}" ${opts.uid != null ? `data-uid="${opts.uid}"` : ''}>
+    ${d.rarity !== 'basic' ? `<span class="rgem" title="${rr.name}"></span>` : ''}
     ${opts.count ? `<span class="cnt">×${opts.count}</span>` : ''}
     <img class="sp hico" src="${sprite('h_' + h.id, h.sprite)}" alt="">
     <div class="cn">${esc(d.name)}</div>
     <div class="sym">${sym.join('')}</div>
-    ${d.special && SPEC[d.special] ? `<div class="sp-t">${esc(SPEC[d.special].text)}</div>` : ''}
+    ${d.special && SPEC[d.special] ? `<div class="sp-t">${esc(Engine.specialText(d))}</div>` : ''}
     <div class="fl">${esc(d.text || '')}</div></div>`;
 }
 
@@ -370,6 +462,11 @@ const SFX = (() => {
     turn: () => { tone(523, 0, 0.08, 'triangle', 0.1); tone(784, 0.09, 0.08, 'triangle', 0.1); tone(1047, 0.18, 0.2, 'triangle', 0.1); },
     chat: () => tone(1200, 0, 0.04, 'square', 0.03),
     click: () => tone(900, 0, 0.03, 'square', 0.03),
+    coin: () => { tone(988, 0, 0.07); tone(1319, 0.07, 0.18); },
+    pack: () => { noise(0, 0.25, 0.08); [392, 523, 659].forEach((f, i) => tone(f, i * 0.07, 0.1, 'square', 0.05)); },
+    rare: () => { tone(784, 0, 0.08, 'triangle', 0.09); tone(1175, 0.08, 0.16, 'triangle', 0.09); },
+    epic: () => { [659, 831, 988, 1319].forEach((f, i) => tone(f, i * 0.07, 0.14, 'square', 0.06)); },
+    legend: () => { [523, 659, 784, 1047, 1319, 1568, 2093].forEach((f, i) => tone(f, i * 0.08, i === 6 ? 0.6 : 0.12, 'square', 0.06)); noise(0.56, 0.3, 0.05); },
   };
   return { play(n) { if (!muted && P[n]) try { P[n](); } catch (e) {} }, unlock() { ac(); }, get muted() { return muted; },
     toggle() { muted = !muted; store.set('bz_muted', muted ? '1' : '0'); if (!muted) { ac(); P.click(); } } };
@@ -566,6 +663,10 @@ function onState(v) {
   });
   S.prevHp = {}; v.players.forEach((p) => (S.prevHp[p.id] = p.hp));
   const newPlay = v.lastPlayed && v.lastPlayed.id !== S.seenPlay; if (v.lastPlayed) S.seenPlay = v.lastPlayed.id;
+  if (v.phase === 'over' && prev && prev.phase === 'play' && v.gameId) {
+    const mp = v.players.find((p) => p.id === v.you);
+    if (mp && mp.inGame) { const g = C.award(v.gameId + ':' + v.you, v.winner === v.you); if (g) { S.reward = { id: v.gameId, g }; setTimeout(() => { SFX.play('coin'); toast(`+${g} gems!`); syncCurrency(); }, 900); } }
+  }
   S.first = false;
   renderAll(newPlay);
   fx.forEach((f) => {
@@ -601,20 +702,21 @@ function renderLobby() {
     <div class="heroes">${Cards.HEROES.map((h) => {
       const owner = v.players.find((p) => p.hero === h.id);
       const cls = owner ? (owner.id === v.you ? 'mine' : 'taken') : '';
-      const nCards = h.cards.reduce((a, c) => a + (c.count || 1), 0);
+      const nCards = Engine.classicDeck(h.id).length;
       return `<div class="hcard ${cls} ${S.deckOpen === h.id ? 'open' : ''}" data-hero="${h.id}" style="--hc:${h.color}">
         ${owner ? `<span class="owner" style="color:${owner.color}">${esc(owner.name)}${owner.ready ? ' ✓' : ''}</span>` : ''}
         <div class="top">${heroImg(h.id)}<div><div class="hn">${esc(h.name)}</div><div class="ht">${esc(h.title)}</div>
         <div class="stats">${icon('heart')} ${h.maxHp} HP · ${icon('deck')} ${nCards}</div></div></div>
         <div class="hs">${esc(h.style)}</div>
         <button class="deckbtn" data-deck="${h.id}">${S.deckOpen === h.id ? 'Hide deck' : 'View deck'}</button>
-        ${S.deckOpen === h.id ? `<div class="deckview">${h.cards.map((c, i) => cardHtml(h.id + ':' + i, { cls: 'mini', count: c.count })).join('')}</div>` : ''}
+        ${S.deckOpen === h.id ? `<div class="deckview">${h.cards.filter((c) => (c.rarity || 'basic') === 'basic').map((c) => cardHtml(c.id, { cls: 'mini', count: c.count })).join('')}</div><div class="muted" style="font-size:17px;margin-top:6px">Classic deck. Build a custom one from your collection.</div>` : ''}
       </div>`;
     }).join('')}</div>
     <div class="plist">${v.players.map((p) => `<div class="prow">${p.hero ? heroImg(p.hero) : icon('skull')}<span class="px" style="color:${p.color}">${esc(p.name)}</span>
-      <span class="muted" style="font-size:17px">${p.hero ? esc(HERO[p.hero].name) : 'choosing…'}${p.id === v.hostId ? ' · host' : ''}${p.wins ? ` · ★${p.wins}` : ''}</span>
+      <span class="muted" style="font-size:17px">${p.hero ? esc(HERO[p.hero].name) : 'choosing…'}${p.id === v.hostId ? ' · host' : ''}${p.wins ? ` · ★${p.wins}` : ''}${p.ready && p.custom ? ' · custom deck' : ''}</span>
       <span class="st" style="color:${p.ready ? 'var(--green)' : 'var(--dim)'}">${p.ready ? 'READY' : 'NOT READY'}</span></div>`).join('')}</div>
     <div class="lobby-actions">
+      ${m.hero ? deckChooser(m) : ''}
       <button class="${m.ready ? '' : 'green'}" id="readyBtn" ${m.hero ? '' : 'disabled'}>${m.ready ? 'Unready' : m.hero ? 'Ready!' : 'Pick a hero'}</button>
       ${isHost ? `<button class="gold" id="startBtn" ${canStart ? '' : 'disabled'}>Start ${ready.length >= 2 ? (ready.length === 2 ? '1v1' : ready.length + '-player brawl') : ''}</button>
         <span class="muted" style="font-size:18px">${ready.length < 2 ? 'Need 2+ ready heroes.' : pending.length && ready.length < 4 ? `Waiting for ${pending.map((p) => esc(p.name)).join(', ')}…` : 'Everyone is ready!'}</span>`
@@ -627,7 +729,9 @@ function renderLobby() {
     send({ t: 'hero', hero: m.hero === h ? null : h });
   });
   document.querySelectorAll('[data-deck]').forEach((b) => b.onclick = () => { S.deckOpen = S.deckOpen === b.dataset.deck ? null : b.dataset.deck; renderLobby(); });
-  $('#readyBtn').onclick = () => { SFX.play('click'); send({ t: 'ready', on: !m.ready }); };
+  $('#readyBtn').onclick = () => { SFX.play('click'); send({ t: 'ready', on: !m.ready, deck: !m.ready && m.hero ? C.deckFor(m.hero) : undefined }); };
+  document.querySelectorAll('[data-luse]').forEach((b) => b.onclick = () => { const r = C.setUseCustom(m.hero, b.dataset.luse === '1'); if (r.error) toast(r.error); renderLobby(); });
+  const ed = $('#editDeck'); if (ed) ed.onclick = () => openColl('decks', m.hero);
   const sb = $('#startBtn'); if (sb) sb.onclick = () => send({ t: 'start' });
 }
 
@@ -666,7 +770,8 @@ function renderTable(newPlay) {
     const board = v.players.slice().sort((a, b) => b.wins - a.wins);
     h = `<div class="big-banner">${wnr ? (wnr.id === v.you ? 'YOU WIN!' : esc(wnr.name).toUpperCase() + ' WINS!') : 'NOBODY WINS'}</div>
       ${wnr ? heroImg(wnr.hero) : ''}
-      <div class="score">${board.map((p) => `<div class="chip">${p.hero ? heroImg(p.hero) : icon('skull')}<span class="px" style="color:${p.color}">${esc(p.name)}</span><span class="px" style="color:var(--gold)">★${p.wins}</span></div>`).join('')}</div>
+      <div class="score">${board.map((p) => `<div class="chip">${p.hero ? heroImg(p.hero) : icon('skull')}<span class="px" style="color:${p.color}">${esc(p.name)}</span><span class="px" style="color:var(--gold);display:inline-flex;align-items:center;gap:3px">${icon('star', 'mini')}${p.wins}</span></div>`).join('')}</div>
+      ${S.reward && S.reward.id === v.gameId ? `<div class="reward">${icon('gem')} +${S.reward.g} gems <button id="openPacksNow">Open packs</button></div>` : ''}
       ${isHost ? `<div class="row"><button class="gold" id="rematchBtn">Rematch</button><button id="lobbyBtn">Change heroes</button></div>` : `<div class="muted">Waiting for ${N(v.hostId)} to start a rematch…</div>`}`;
   } else if (w) {
     const mine = w.pid === v.you;
@@ -685,6 +790,7 @@ function renderTable(newPlay) {
   const cs = $('#cancelSel'); if (cs) cs.onclick = () => { S.sel = null; renderAll(); };
   const rb = $('#rematchBtn'); if (rb) rb.onclick = () => send({ t: 'rematch' });
   const lb = $('#lobbyBtn'); if (lb) lb.onclick = () => send({ t: 'lobby' });
+  const op = $('#openPacksNow'); if (op) op.onclick = () => openColl('packs');
 }
 (function timerLoop() {
   const bar = document.getElementById('timerBar');
@@ -732,6 +838,141 @@ function renderFeeds() {
   if (c !== lastC || !cf.innerHTML) { lastC = c; cf.innerHTML = v.chat.length ? v.chat.map((x) => `<p><span class="w" style="color:${x.color}">${esc(x.name)}</span> ${esc(x.text)}</p>`).join('') : '<p class="sys">No messages yet. Start the trash talk.</p>'; cf.scrollTop = cf.scrollHeight; }
 }
 
+/* ============ COLLECTION / GACHA ============ */
+const C = window.Collection, ECON = Cards.ECONOMY, RARITY = Cards.RARITY;
+const RORDER = { legendary: 0, epic: 1, rare: 2, common: 3, basic: 4 };
+const sortCards = (a, b) => RORDER[DEF[a].rarity] - RORDER[DEF[b].rarity] || DEF[a].name.localeCompare(DEF[b].name);
+S.ctab = 'packs'; S.cfHero = 'all'; S.cfRar = 'all'; S.dhero = Cards.HEROES[0].id;
+function currency() {
+  return `<span class="cur">${icon('gem')} ${C.p.gems}</span><span class="cur">${icon('shard')} ${C.p.shards}</span><span class="cur">${packImg('mini')} ${C.p.packs}</span>`;
+}
+const packImg = (cls) => `<img class="sp ${cls || ''}" src="${sprite('i_pack', ICONS.pack)}" alt="pack">`;
+function syncCurrency() { document.querySelectorAll('.curbar').forEach((el) => (el.innerHTML = currency())); }
+function openColl(tab, hero) { S.ctab = tab || S.ctab; if (hero) S.dhero = hero; $('#coll').classList.remove('hide'); renderColl(); }
+function closeColl() { $('#coll').classList.add('hide'); if (S.v && S.v.phase === 'lobby') renderLobby(); syncCurrency(); }
+function renderColl() {
+  document.querySelectorAll('#collTabs button').forEach((b) => b.classList.toggle('on', b.dataset.t === S.ctab));
+  syncCurrency();
+  const el = $('#collBody');
+  if (S.ctab === 'packs') renderPacks(el); else if (S.ctab === 'cards') renderCards(el); else renderDecks(el);
+}
+function renderPacks(el) {
+  const p = C.p; const canOpen = p.packs > 0 || p.gems >= ECON.packCost;
+  el.innerHTML = `<div class="packzone">
+    <div class="bigpack">${packImg('packbig')}</div>
+    <div class="px" style="font-size:11px;color:var(--gold)">MAZE PACK · ${ECON.packSize} CARDS</div>
+    <button class="gold" id="openPackBtn" ${canOpen ? '' : 'disabled'}>${p.packs > 0 ? `Open pack (${p.packs} left)` : `Buy & open · ${ECON.packCost} gems`}</button>
+    <button id="dailyBtn" ${C.dailyReady() ? '' : 'disabled'}>${C.dailyReady() ? 'Claim free daily pack' : 'Daily pack claimed ✓'}</button>
+    <div class="muted small">Every pack has at least 1 Rare or better.<br>
+      Odds per card: <span style="color:${RARITY.common.color}">Common 70%</span> · <span style="color:${RARITY.rare.color}">Rare 22%</span> · <span style="color:${RARITY.epic.color}">Epic 6.5%</span> · <span style="color:${RARITY.legendary.color}">Legendary 1.5%</span><br>
+      Legendary guaranteed within <b style="color:var(--gold)">${ECON.pity - p.pity}</b> pack${ECON.pity - p.pity === 1 ? '' : 's'}.</div>
+    <div class="muted small">Earn gems by playing: win ${icon('gem')}${ECON.winGems} · lose ${icon('gem')}${ECON.lossGems}.<br>Dupes you can't use turn into shards ${icon('shard')}. Spend shards to craft missing cards.</div>
+    <div class="muted small">Collection: <b style="color:var(--ink)">${C.ownedUnique()} / ${C.collectibleCount()}</b> cards · ${p.opened} packs opened</div>
+    <div class="row backup"><button id="expBtn">Copy backup code</button><button id="impBtn">Restore from code</button></div>
+    <div class="muted small">Your collection lives in this browser. Use a backup code to move it to another device.</div>
+  </div>`;
+  $('#openPackBtn').onclick = startPackOpen;
+  $('#dailyBtn').onclick = () => { const r = C.claimDaily(); if (r.ok) { SFX.play('coin'); toast(`+${r.packs} free pack!`); } renderColl(); };
+  $('#expBtn').onclick = () => { const code = C.exportCode(); (navigator.clipboard ? navigator.clipboard.writeText(code) : Promise.reject()).then(() => toast('Backup code copied. Paste it somewhere safe!'), () => prompt('Copy your backup code:', code)); };
+  $('#impBtn').onclick = () => { const code = prompt('Paste your backup code (this REPLACES the collection in this browser):'); if (!code) return; const r = C.importCode(code); toast(r.ok ? 'Collection restored!' : r.error); renderColl(); };
+}
+function rarChip(r) { return `<span class="rchip" style="color:${RARITY[r].color};border-color:${RARITY[r].color}">${RARITY[r].name}</span>`; }
+function renderCards(el) {
+  const heroes = [['all', 'All'], ...Cards.HEROES.map((h) => [h.id, h.name]), ['neutral', 'Neutral']];
+  const rars = ['all', 'legendary', 'epic', 'rare', 'common'];
+  const ids = Object.keys(DEF).filter((id) => DEF[id].rarity !== 'basic' && (S.cfHero === 'all' || DEF[id].hero === S.cfHero) && (S.cfRar === 'all' || DEF[id].rarity === S.cfRar)).sort(sortCards);
+  el.innerHTML = `<div class="filters">${heroes.map(([k, n]) => `<button class="f ${S.cfHero === k ? 'on' : ''}" data-fh="${k}">${esc(n)}</button>`).join('')}</div>
+    <div class="filters">${rars.map((r) => `<button class="f ${S.cfRar === r ? 'on' : ''}" data-fr="${r}" ${r !== 'all' ? `style="color:${RARITY[r].color}"` : ''}>${r === 'all' ? 'All rarities' : RARITY[r].name}</button>`).join('')}</div>
+    <div class="cgrid">${ids.map((id) => {
+      const have = C.p.cards[id] || 0, max = C.maxOf(id), d = DEF[id], cost = ECON.craftCost[d.rarity];
+      return `<div class="cslot ${have ? '' : 'missing'}">${cardHtml(id)}
+        <div class="own">${have ? `<span>${Math.min(have, max)}/${max} owned</span>` : '<span class="muted">not owned</span>'}
+        ${have < max ? `<button class="craft" data-craft="${id}" ${C.p.shards >= cost ? '' : 'disabled'}>Craft ${icon('shard')}${cost}</button>` : ''}</div></div>`;
+    }).join('') || '<p class="muted">No cards match.</p>'}</div>`;
+  el.querySelectorAll('[data-fh]').forEach((b) => b.onclick = () => { S.cfHero = b.dataset.fh; renderColl(); });
+  el.querySelectorAll('[data-fr]').forEach((b) => b.onclick = () => { S.cfRar = b.dataset.fr; renderColl(); });
+  el.querySelectorAll('[data-craft]').forEach((b) => b.onclick = () => {
+    const d = DEF[b.dataset.craft];
+    if (!confirm(`Craft ${d.name} for ${ECON.craftCost[d.rarity]} shards?`)) return;
+    const r = C.craft(b.dataset.craft); if (r.ok) { SFX.play(d.rarity === 'legendary' ? 'legend' : 'magic'); toast(`Crafted ${d.name}!`); } else toast(r.error); renderColl();
+  });
+}
+function renderDecks(el) {
+  const hero = S.dhero, h = HERO[hero];
+  const deck = C.getDeck(hero); const cnt = {}; deck.forEach((id) => (cnt[id] = (cnt[id] || 0) + 1));
+  const val = C.deckValid(hero); const using = !!C.deckFor(hero);
+  const avail = Object.keys(DEF).filter((id) => (DEF[id].hero === hero || DEF[id].hero === 'neutral') && C.owned(id) > 0).sort(sortCards);
+  const inDeck = Object.keys(cnt).sort(sortCards);
+  el.innerHTML = `<div class="filters">${Cards.HEROES.map((x) => `<button class="f hsel ${x.id === hero ? 'on' : ''}" data-dh="${x.id}" style="--hc:${x.color}">${heroImg(x.id)}${esc(x.name)}</button>`).join('')}</div>
+    <div class="deckhead">
+      <div><div class="px" style="font-size:11px;color:${h.color}">${esc(h.name).toUpperCase()}'S DECK</div>
+      <div class="muted small">Now using: <b style="color:var(--ink)">${using ? `Custom deck (${ECON.deckSize})` : `Classic deck (${Engine.classicDeck(hero).length})`}</b></div></div>
+      <div class="row"><button data-use="0" class="${using ? '' : 'on'}">Use classic</button><button data-use="1" class="${using ? 'on' : ''}" ${val.ok ? '' : 'disabled'}>Use custom</button></div>
+    </div>
+    <div class="dbuild">
+      <div class="dlist panel">
+        <div class="dcount ${deck.length === ECON.deckSize ? 'okc' : ''}">${deck.length} / ${ECON.deckSize}</div>
+        <div class="${val.ok ? 'okc' : 'bad'} small">${val.ok ? '✓ Deck is ready to use' : esc(val.error)}</div>
+        <div class="row" style="margin:8px 0"><button id="fromClassic">Start from classic</button><button id="clearDeck">Clear</button></div>
+        ${inDeck.map((id) => { const d = DEF[id]; const col = d.hero === 'neutral' ? Cards.NEUTRAL.color : HERO[d.hero].color;
+          return `<div class="drow"><span class="rdot" style="background:${RARITY[d.rarity].color}"></span><span style="color:${col}">${esc(d.name)}</span><span class="muted">×${cnt[id]}</span><button class="mini-b" data-rm="${id}">−</button></div>`; }).join('') || '<p class="muted small">Empty. Tap cards on the right to add them.</p>'}
+        <div class="muted small" style="margin-top:8px">Max copies: Basic/Common 3 · Rare 2 · Epic/Legendary 1</div>
+      </div>
+      <div class="dpool">${avail.map((id) => {
+        const left = Math.min(C.owned(id), C.maxOf(id)) - (cnt[id] || 0);
+        return `<div class="padd ${left > 0 && deck.length < ECON.deckSize ? '' : 'used'}" data-add="${id}">${cardHtml(id, { cls: 'mini' })}<span class="left">${left > 0 ? '+ add (' + left + ')' : 'maxed'}</span></div>`;
+      }).join('')}</div>
+    </div>`;
+  el.querySelectorAll('[data-dh]').forEach((b) => b.onclick = () => { S.dhero = b.dataset.dh; renderColl(); });
+  el.querySelectorAll('[data-use]').forEach((b) => b.onclick = () => { const r = C.setUseCustom(hero, b.dataset.use === '1'); if (r.error) toast(r.error); renderColl(); });
+  el.querySelectorAll('[data-rm]').forEach((b) => b.onclick = () => { const d = C.getDeck(hero); d.splice(d.indexOf(b.dataset.rm), 1); C.setDeck(hero, d); SFX.play('click'); renderColl(); });
+  el.querySelectorAll('[data-add]').forEach((b) => b.onclick = () => {
+    const id = b.dataset.add; const d = C.getDeck(hero);
+    if (d.length >= ECON.deckSize) return toast('Deck is full (' + ECON.deckSize + ')');
+    if (d.filter((x) => x === id).length >= Math.min(C.owned(id), C.maxOf(id))) return toast('No more copies available');
+    d.push(id); C.setDeck(hero, d); SFX.play('click'); renderColl();
+  });
+  $('#fromClassic').onclick = () => {
+    const cl = []; const c2 = {};
+    Engine.classicDeck(hero).forEach((id) => { c2[id] = (c2[id] || 0) + 1; if (c2[id] <= C.maxOf(id)) cl.push(id); });
+    C.setDeck(hero, cl.slice(0, ECON.deckSize)); renderColl();
+  };
+  $('#clearDeck').onclick = () => { if (confirm('Clear this deck?')) { C.setDeck(hero, []); renderColl(); } };
+}
+function startPackOpen() {
+  const r = C.openPack(); if (r.error) return toast(r.error);
+  SFX.play('pack'); S.pack = { cards: r.cards, shown: [] };
+  $('#packOv').classList.remove('hide'); renderPackOv(); syncCurrency();
+}
+function renderPackOv() {
+  const pk = S.pack; const all = pk.shown.length === pk.cards.length;
+  $('#packStage').innerHTML = `<div class="px" style="font-size:12px;color:var(--gold);margin-bottom:6px">${all ? 'NICE PULLS!' : 'TAP TO REVEAL'}</div>
+    <div class="pcards">${pk.cards.map((c, i) => pk.shown.includes(i)
+      ? `<div class="pc shown r-${c.rarity}">${cardHtml(c.id, { cls: 'flipin' })}<div class="ptag" style="color:${RARITY[c.rarity].color}">${c.dupe ? `DUPE +${c.shards} ${icon('shard')}` : c.isNew ? 'NEW!' : '+1 copy'}</div></div>`
+      : `<div class="pc back" data-i="${i}"><div class="cardback">${packImg()}</div></div>`).join('')}</div>
+    <div class="row" style="justify-content:center;margin-top:12px">
+      ${all ? `<button class="gold" id="againPack" ${C.p.packs > 0 || C.p.gems >= ECON.packCost ? '' : 'disabled'}>${C.p.packs > 0 ? `Open another (${C.p.packs})` : `Buy another · ${ECON.packCost}`}</button><button id="donePack">Done</button>`
+        : `<button id="revealAll">Reveal all</button>`}</div>`;
+  document.querySelectorAll('#packStage .pc.back').forEach((b) => b.onclick = () => reveal(+b.dataset.i));
+  const ra = $('#revealAll'); if (ra) ra.onclick = () => { pk.cards.forEach((_, i) => { if (!pk.shown.includes(i)) setTimeout(() => reveal(i), 140 * i); }); };
+  const ag = $('#againPack'); if (ag) ag.onclick = startPackOpen;
+  const dn = $('#donePack'); if (dn) dn.onclick = () => { $('#packOv').classList.add('hide'); renderColl(); };
+}
+function reveal(i) {
+  const pk = S.pack; if (pk.shown.includes(i)) return; pk.shown.push(i);
+  const r = pk.cards[i].rarity;
+  SFX.play(r === 'legendary' ? 'legend' : r === 'epic' ? 'epic' : r === 'rare' ? 'rare' : 'draw');
+  if (r === 'legendary') { const f = document.createElement('div'); f.className = 'goldflash'; document.body.appendChild(f); setTimeout(() => f.remove(), 900); }
+  renderPackOv();
+}
+function deckChooser(m) {
+  const val = C.deckValid(m.hero).ok, using = !!C.deckFor(m.hero);
+  return `<div class="deckpick"><span class="muted">Deck:</span>
+    <button data-luse="0" class="${using ? '' : 'on'}" ${m.ready ? 'disabled' : ''}>Classic</button>
+    <button data-luse="1" class="${using ? 'on' : ''}" ${!val || m.ready ? 'disabled' : ''}>Custom${val ? '' : ' (build it first)'}</button>
+    <button id="editDeck">Edit deck</button></div>`;
+}
+
 /* ============ UI ============ */
 function toast(m) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = m; document.body.appendChild(t); setTimeout(() => t.remove(), 2200); }
 function flash() { const f = document.createElement('div'); f.className = 'flash'; document.body.appendChild(f); setTimeout(() => f.remove(), 600); }
@@ -759,6 +1000,10 @@ $('#joinBtn').onclick = () => joinRoom($('#codeIn').value);
 $('#codeIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') joinRoom($('#codeIn').value); });
 $('#nameIn').addEventListener('keydown', (e) => { if (e.key === 'Enter') (params.get('room') ? joinRoom($('#codeIn').value) : createRoom()); });
 $('#rulesBtn1').onclick = openRules; $('#rulesBtn2').onclick = openRules;
+$('#collBtn1').onclick = () => openColl('packs'); $('#collBtn2').onclick = () => openColl();
+$('#collClose').onclick = closeColl;
+document.querySelectorAll('#collTabs button').forEach((b) => b.onclick = () => { S.ctab = b.dataset.t; renderColl(); });
+syncCurrency();
 $('#rulesClose').onclick = () => $('#rules').classList.add('hide');
 $('#rules').onclick = (e) => { if (e.target.id === 'rules') $('#rules').classList.add('hide'); };
 $('#copyBtn').onclick = copyLink;

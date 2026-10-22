@@ -1,22 +1,50 @@
 /* Bonamaze: authoritative rules engine. Runs on the host's browser only. No DOM. */
 (function (root) {
   const Cards = root.Cards || (typeof require !== 'undefined' ? require('./cards.js') : null);
-  const MAX_PLAYERS = 4, MAX_ROOM = 10, START_HAND = 3;
+  const MAX_PLAYERS = 4, MAX_ROOM = 10, START_HAND = 3, MAX_PLAYS_PER_TURN = 8;
   const COLORS = ['#e05a4f', '#5a8cff', '#5fd068', '#ffb340', '#c070ff', '#40d8d0', '#ff7ab8', '#c8c8c8', '#a0e050', '#ff9060'];
 
-  // Flatten card definitions: key = "heroId:index"
+  // Card definitions by id. def.hero = hero id or 'neutral'.
   function buildDefs() {
     const DEF = {}, HERO = {};
-    Cards.HEROES.forEach((h) => {
-      HERO[h.id] = h;
-      h.cards.forEach((c, i) => {
-        DEF[h.id + ':' + i] = Object.assign({ attack: 0, shield: 0, heal: 0, draw: 0, again: 0, special: null, text: '' }, c, { key: h.id + ':' + i, hero: h.id });
-      });
-    });
+    const add = (owner, c) => {
+      const sp = c.special ? Cards.SPECIALS[c.special] : null;
+      DEF[c.id] = Object.assign({ attack: 0, shield: 0, heal: 0, draw: 0, again: 0, special: null, text: '', rarity: 'basic' }, c,
+        { key: c.id, hero: owner, value: c.value != null ? c.value : sp && sp.value != null ? sp.value : 0 });
+    };
+    Cards.HEROES.forEach((h) => { HERO[h.id] = h; h.cards.forEach((c) => add(h.id, c)); });
+    (Cards.NEUTRAL ? Cards.NEUTRAL.cards : []).forEach((c) => add('neutral', c));
     return { DEF, HERO };
   }
+  const SHARED = buildDefs();
   function needsTarget(def) {
     return def.attack > 0 || !!(def.special && Cards.SPECIALS[def.special] && Cards.SPECIALS[def.special].target);
+  }
+  function classicDeck(heroId) {
+    const h = SHARED.HERO[heroId]; if (!h) return [];
+    const out = []; h.cards.forEach((c) => { if ((c.rarity || 'basic') === 'basic') for (let k = 0; k < (c.count || 1); k++) out.push(c.id); });
+    return out;
+  }
+  // Rules check for a custom deck (ownership is checked on the player's own device).
+  function validateDeck(heroId, list) {
+    const E = Cards.ECONOMY;
+    if (!SHARED.HERO[heroId]) return { error: 'Unknown hero' };
+    if (!Array.isArray(list)) return { error: 'Bad deck' };
+    if (list.length !== E.deckSize) return { error: `Deck must have exactly ${E.deckSize} cards (has ${list.length})` };
+    const counts = {};
+    for (const id of list) {
+      const d = SHARED.DEF[id];
+      if (!d) return { error: 'Unknown card in deck' };
+      if (d.hero !== heroId && d.hero !== 'neutral') return { error: `${d.name} belongs to another hero` };
+      counts[id] = (counts[id] || 0) + 1;
+      const max = E.maxCopies[d.rarity] || 1;
+      if (counts[id] > max) return { error: `Max ${max} × ${d.name}` };
+    }
+    return { ok: true };
+  }
+  function specialText(def) {
+    const sp = def.special && Cards.SPECIALS[def.special]; if (!sp) return '';
+    return sp.text.replace(/\{v\}/g, def.value);
   }
 
   function createGame(opts) {
@@ -26,17 +54,18 @@
     const TURN_MS = opts.turnMs != null ? opts.turnMs : 60000;
     const AFK_MS = opts.afkMs != null ? opts.afkMs : 4000;
     const SUDDEN_TURNS = opts.suddenTurns != null ? opts.suddenTurns : 12; // turns per player before the maze collapses
-    const { DEF, HERO } = buildDefs();
+    const { DEF, HERO } = SHARED;
 
     const G = {
       phase: 'lobby', players: [], turnId: null, plays: 0, wait: null, lastPlayed: null,
       log: [], chat: [], emotes: [], seq: 0, logSeq: 0, chatSeq: 0, emoteSeq: 0, playSeq: 0, uid: 0,
-      winner: null, round: 0, hostId: null,
+      winner: null, round: 0, hostId: null, turnCount: 0, sudden: false, startCount: 0, gameId: null,
     };
     const api = { G, onChange: () => {} };
     const P = (id) => G.players.find((p) => p.id === id);
     const alive = (p) => !!p && p.inGame && p.hp > 0;
     const living = () => G.players.filter(alive);
+    const rivals = (p) => living().filter((q) => q.id !== p.id);
     const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
     function log(text, sfx) { G.log.push({ id: ++G.logSeq, text, sfx: sfx || null }); if (G.log.length > 150) G.log.shift(); }
     function changed() { G.seq++; api.onChange(); }
@@ -50,7 +79,7 @@
       const base = name; let n = 2;
       while (G.players.some((q) => q.name.toLowerCase() === name.toLowerCase())) name = base.slice(0, 12) + n++;
       const used = G.players.map((q) => q.color);
-      p = { id, name, color: COLORS.find((c) => !used.includes(c)) || COLORS[0], hero: null, ready: false, connected: true, dcAt: null,
+      p = { id, name, color: COLORS.find((c) => !used.includes(c)) || COLORS[0], hero: null, ready: false, deckList: null, connected: true, dcAt: null,
         wins: 0, inGame: false, hp: 0, maxHp: 0, deck: [], hand: [], discard: [], shields: [], bubble: false };
       G.players.push(p);
       if (!G.hostId) G.hostId = id;
@@ -75,13 +104,15 @@
       const p = P(pid);
       if (hero !== null && !HERO[hero]) return { error: 'Unknown hero' };
       if (hero && G.players.some((q) => q.id !== pid && q.hero === hero)) return { error: `${HERO[hero].name} is taken` };
-      p.hero = hero; p.ready = false;
+      p.hero = hero; p.ready = false; p.deckList = null;
       return { ok: true };
     }
-    function setReady(pid, on) {
+    function setReady(pid, on, deck) {
       if (G.phase === 'play') return { error: 'Game in progress' };
       const p = P(pid);
       if (on && !p.hero) return { error: 'Pick a hero first' };
+      if (on && deck) { const r = validateDeck(p.hero, deck); if (r.error) return r; p.deckList = deck.slice(); }
+      else if (on) p.deckList = null;
       p.ready = !!on;
       return { ok: true };
     }
@@ -95,12 +126,13 @@
       r.forEach((p) => {
         const h = HERO[p.hero];
         p.inGame = true; p.maxHp = h.maxHp || 10; p.hp = p.maxHp;
-        h.cards.forEach((c, i) => { for (let k = 0; k < (c.count || 1); k++) p.deck.push({ uid: ++G.uid, key: h.id + ':' + i }); });
+        (p.deckList || classicDeck(p.hero)).forEach((id) => p.deck.push({ uid: ++G.uid, key: id, owner: p.id }));
         shuffle(p.deck);
         draw(p, START_HAND);
       });
       G.round++; G.phase = 'play'; G.winner = null; G.lastPlayed = null; G.turnCount = 0; G.sudden = false; G.startCount = r.length;
-      log(`— Round ${G.round}: ${r.map((p) => `${p.name} (${HERO[p.hero].name})`).join(' vs ')} —`, 'start');
+      G.gameId = Math.floor(rand() * 1e9).toString(36) + G.round;
+      log(`— Round ${G.round}: ${r.map((p) => `${p.name} (${HERO[p.hero].name}${p.deckList ? ', custom deck' : ''})`).join(' vs ')} —`, 'start');
       beginTurn(r[Math.floor(rand() * r.length)].id);
       return { ok: true };
     }
@@ -114,19 +146,23 @@
     /* ---------- cards ---------- */
     function draw(p, n) {
       for (let i = 0; i < n; i++) {
-        if (!p.deck.length) {
-          if (!p.discard.length) return;
-          p.deck = shuffle(p.discard); p.discard = [];
-        }
+        if (!p.deck.length) { if (!p.discard.length) return; p.deck = shuffle(p.discard); p.discard = []; }
         p.hand.push(p.deck.pop());
       }
     }
-    function discardCard(c) { const o = G.players.find((q) => c.key.startsWith(q.hero + ':') && q.inGame) ; (o || P(G.turnId)).discard.push(c); }
+    function discardCard(c) { (P(c.owner) || P(G.turnId)).discard.push(c); }
     function bigShieldIdx(t) { let bi = -1; t.shields.forEach((s, i) => { if (bi < 0 || s.dur > t.shields[bi].dur) bi = i; }); return bi; }
     function eliminate(t) {
       log(`☠ ${t.name} is knocked out!`, 'out');
       t.shields.forEach((s) => discardCard(s.c)); t.shields = [];
-      t.discard.push(...t.hand); t.hand = []; t.bubble = false;
+      t.hand.forEach(discardCard); t.hand = []; t.bubble = false;
+    }
+    function loseHp(t, n) { // direct HP loss, ignores shields (not bubble)
+      if (!alive(t) || n <= 0 || t.bubble) return 0;
+      const d = Math.min(n, t.hp); t.hp -= d;
+      log(`${t.name} loses ${d} HP (${t.hp} left).`, 'hit');
+      if (t.hp === 0) eliminate(t);
+      return d;
     }
     function damage(t, n, pierce) {
       if (!alive(t) || n <= 0) return 0;
@@ -148,56 +184,77 @@
       const sp = def.special ? Cards.SPECIALS[def.special] : null;
       return living().filter((q) => q.id !== pid && !q.bubble && (!sp || !sp.needsShield || q.shields.length));
     }
+    function flipAll() {
+      let n = 0;
+      G.players.forEach((q) => { q.shields.forEach((s) => discardCard(s.c)); n += q.shields.length; q.shields = []; });
+      log(`The table goes flying! ${n} shield${n === 1 ? '' : 's'} destroyed.`, 'break');
+    }
 
-    /* ---------- SPECIALS ---------- */
+    /* ---------- SPECIALS (v = the card's value) ---------- */
     const SPECIALS = {
-      tableflip(p) {
-        let n = 0;
-        G.players.forEach((q) => { q.shields.forEach((s) => discardCard(s.c)); n += q.shields.length; q.shields = []; });
-        log(`The table goes flying! ${n} shield${n === 1 ? '' : 's'} destroyed.`, 'break');
-      },
-      whirlwind(p) { living().filter((q) => q.id !== p.id).forEach((q) => damage(q, 2)); },
-      bubble(p) { p.bubble = true; log(`${p.name} is safe in a holy bubble until their next turn.`, 'magic'); },
-      smite(p, t) { if (t) damage(t, 2, true); },
+      tableflip() { flipAll(); },
+      whirlwind(p, t, v) { rivals(p).forEach((q) => damage(q, v)); },
+      bubble(p) { p.bubble = true; log(`${p.name} is safe in a bubble until their next turn.`, 'magic'); },
+      smite(p, t, v) { if (t) damage(t, v, true); },
       shieldbreak(p, t) {
         if (!t || !t.shields.length) return;
-        const i = bigShieldIdx(t); const s = t.shields.splice(i, 1)[0]; discardCard(s.c);
+        const s = t.shields.splice(bigShieldIdx(t), 1)[0]; discardCard(s.c);
         log(`${t.name}'s ${DEF[s.c.key].name} is destroyed.`, 'break');
       },
       yoink(p, t) {
         if (!t || !t.shields.length) return;
-        const i = bigShieldIdx(t); const s = t.shields.splice(i, 1)[0]; p.shields.push(s);
+        const s = t.shields.splice(bigShieldIdx(t), 1)[0]; p.shields.push(s);
         log(`${p.name} yoinks ${t.name}'s ${DEF[s.c.key].name}!`, 'steal');
       },
-      leech(p) {
-        let got = 0;
-        living().filter((q) => q.id !== p.id && !q.bubble).forEach((q) => {
-          q.hp -= 1; got += 1; log(`${q.name} loses 1 HP (${q.hp} left).`, 'hit');
-          if (q.hp <= 0) { q.hp = 0; eliminate(q); }
-        });
+      leech(p, t, v) {
+        let got = 0; rivals(p).forEach((q) => { got += loseHp(q, v); });
         if (got) { p.hp = Math.min(p.maxHp, p.hp + got); log(`${p.name} heals ${got}.`, 'heal'); }
       },
-      fireball(p) {
-        living().filter((q) => q.id !== p.id).forEach((q) => damage(q, 3));
+      fireball(p, t, v) {
+        rivals(p).forEach((q) => damage(q, v));
         if (p.hp > 1 && !p.bubble) { p.hp -= 1; log(`${p.name} singes themself (${p.hp} HP).`, 'hit'); }
       },
       swaphp(p, t) {
-        if (!t) return;
-        const a = p.hp, b = t.hp;
+        if (!t) return; const a = p.hp, b = t.hp;
         p.hp = Math.min(p.maxHp, b); t.hp = Math.min(t.maxHp, a);
         log(`${p.name} and ${t.name} swap HP! (${p.hp} ↔ ${t.hp})`, 'magic');
       },
       chicken(p, t) {
-        if (!t) return;
-        const n = t.hand.length; t.discard.push(...t.hand); t.hand = [];
+        if (!t) return; const n = t.hand.length; t.hand.forEach(discardCard); t.hand = [];
         log(`${t.name} turns into a chicken and drops ${n} card${n === 1 ? '' : 's'}. Bawk.`, 'magic');
+      },
+      flipsmash(p, t, v) { flipAll(); if (t) damage(t, v); },
+      berserk(p, t, v) { if (!t) return; const d = Math.max(1, Math.min(v, p.maxHp - p.hp)); log(`${p.name} goes BERSERK for ${d}!`, 'stab'); damage(t, d); },
+      discard(p, t, v) {
+        if (!t) return; let n = 0;
+        for (let i = 0; i < v && t.hand.length; i++) { discardCard(t.hand.splice(Math.floor(rand() * t.hand.length), 1)[0]); n++; }
+        log(`${t.name} drops ${n} card${n === 1 ? '' : 's'}.`, 'steal');
+      },
+      stealcard(p, t) {
+        if (!t || !t.hand.length) { log('…but their hand is empty.'); return; }
+        p.hand.push(t.hand.splice(Math.floor(rand() * t.hand.length), 1)[0]);
+        log(`${p.name} swipes a card from ${t.name}!`, 'steal');
+      },
+      execute(p, t, v) {
+        if (!t) return;
+        if (t.hp <= v) { log(`${t.name} is in execute range!`, 'stab'); damage(t, v, true); } else damage(t, 1);
+      },
+      heist(p) {
+        let n = 0; rivals(p).forEach((q) => { n += q.shields.length; p.shields.push(...q.shields); q.shields = []; });
+        log(`${p.name} pulls off the heist: ${n} shield${n === 1 ? '' : 's'} stolen!`, 'steal');
+      },
+      surge(p) {
+        const order = G.players.filter(alive); if (order.length < 2) return;
+        const hands = order.map((q) => q.hand);
+        order.forEach((q, i) => { q.hand = hands[(i - 1 + order.length) % order.length]; });
+        log('Wild magic! Everyone passes their hand to the next player.', 'magic');
       },
     };
 
     /* ---------- turns ---------- */
     function beginTurn(id) {
       const p = P(id);
-      G.turnId = id; p.bubble = false; G.plays = 1;
+      G.turnId = id; p.bubble = false; G.plays = 1; G.turnPlays = 0;
       G.turnCount++;
       if (G.turnCount > SUDDEN_TURNS * G.startCount) {
         if (!G.sudden) { G.sudden = true; log('⚠ THE MAZE IS COLLAPSING! Falling rocks hit everyone at the start of their turn, harder every round.', 'quake'); }
@@ -241,15 +298,16 @@
       p.hand.splice(hi, 1);
       G.lastPlayed = { id: ++G.playSeq, pid, key: c.key, target: t ? t.id : null };
       log(`${p.name} plays ${def.name}${t ? ' on ' + t.name : ''}.`, 'play');
-      // resolve: shield, heal, draw, attack, special, again
       if (def.shield > 0) { p.shields.push({ c, dur: def.shield }); log(`${p.name} raises a ${def.shield}-point shield.`, 'shield'); }
       if (def.heal > 0) { const h = Math.min(def.heal, p.maxHp - p.hp); p.hp += h; log(h ? `${p.name} heals ${h} (${p.hp} HP).` : `${p.name} is already at full HP.`, h ? 'heal' : null); }
       if (def.draw > 0) { draw(p, def.draw); log(`${p.name} draws ${def.draw}.`, 'draw'); }
       if (def.attack > 0) { if (t) damage(t, def.attack); else log('…but there is nobody to hit.'); }
-      if (def.special && SPECIALS[def.special]) SPECIALS[def.special](p, t);
-      if (def.shield <= 0) p.discard.push(c);
+      if (def.special && SPECIALS[def.special]) SPECIALS[def.special](p, t, def.value);
+      if (def.shield <= 0) discardCard(c);
       if (checkOver()) return { ok: true };
       G.plays = G.plays - 1 + (def.again || 0);
+      G.turnPlays = (G.turnPlays || 0) + 1;
+      if (G.plays > 0 && G.turnPlays >= MAX_PLAYS_PER_TURN) { G.plays = 0; log(`${p.name} is out of breath (max ${MAX_PLAYS_PER_TURN} plays per turn).`); }
       if (!p.hand.length) { draw(p, 2); if (p.hand.length) log(`${p.name}'s hand is empty, so they draw 2.`, 'draw'); }
       if (G.plays > 0 && p.hand.length) {
         if (def.again) log(`${p.name} gets to play again!`, 'again');
@@ -263,7 +321,6 @@
       const vt = validTargets(p.id, def);
       play(p.id, c.uid, vt.length ? vt[Math.floor(rand() * vt.length)].id : null);
     }
-
     function tick() {
       const w = G.wait; if (!w || G.phase !== 'play') return;
       const p = P(w.pid); const t = now();
@@ -279,7 +336,7 @@
       let r = { ok: true };
       switch (msg.t) {
         case 'hero': r = pickHero(pid, msg.hero == null ? null : String(msg.hero)); break;
-        case 'ready': r = setReady(pid, msg.on); break;
+        case 'ready': r = setReady(pid, msg.on, msg.deck); break;
         case 'start': case 'rematch':
           if (pid !== G.hostId) return { error: 'Only the host can start' };
           if (G.phase === 'play') return { error: 'Game running' };
@@ -303,11 +360,12 @@
     function view(pid) {
       const w = G.wait;
       return {
-        you: pid, hostId: G.hostId, phase: G.phase, round: G.round, turn: G.turnId, plays: G.plays, winner: G.winner, seq: G.seq,
-        sudden: !!G.sudden, rocks: G.sudden ? 1 + Math.floor((G.turnCount - 1 - SUDDEN_TURNS * G.startCount) / G.startCount) : 0, turnsLeft: G.phase === 'play' ? Math.max(0, SUDDEN_TURNS * G.startCount - G.turnCount) : null,
+        you: pid, hostId: G.hostId, phase: G.phase, round: G.round, gameId: G.gameId, turn: G.turnId, plays: G.plays, winner: G.winner, seq: G.seq,
+        sudden: !!G.sudden, rocks: G.sudden ? 1 + Math.floor((G.turnCount - 1 - SUDDEN_TURNS * G.startCount) / G.startCount) : 0,
+        turnsLeft: G.phase === 'play' ? Math.max(0, SUDDEN_TURNS * G.startCount - G.turnCount) : null,
         lastPlayed: G.lastPlayed,
         players: G.players.map((p) => ({
-          id: p.id, name: p.name, color: p.color, hero: p.hero, ready: p.ready, connected: p.connected, wins: p.wins, inGame: p.inGame,
+          id: p.id, name: p.name, color: p.color, hero: p.hero, ready: p.ready, custom: !!p.deckList, connected: p.connected, wins: p.wins, inGame: p.inGame,
           hp: p.hp, maxHp: p.maxHp, alive: alive(p), bubble: p.bubble, deck: p.deck.length, discard: p.discard.length,
           shields: p.shields.map((s) => ({ key: s.c.key, dur: s.dur })),
           handCount: p.hand.length,
@@ -322,7 +380,7 @@
     return api;
   }
 
-  const Engine = { createGame, buildDefs, needsTarget, MAX_PLAYERS };
+  const Engine = { createGame, buildDefs: () => SHARED, needsTarget, classicDeck, validateDeck, specialText, MAX_PLAYERS };
   if (typeof module !== 'undefined' && module.exports) module.exports = Engine;
   else root.Engine = Engine;
 })(typeof window !== 'undefined' ? window : globalThis);
