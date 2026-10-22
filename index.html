@@ -194,6 +194,8 @@ header button{padding:7px 9px;font-size:9px}
 @keyframes flash{from{background:rgba(224,90,79,.4)}to{background:transparent}}
 
 
+.netdot{font-family:var(--px);font-size:8px}.netdot.online{color:var(--green)}.netdot.reconnecting{color:var(--red);animation:blink 1s steps(2) infinite}
+.inapp{background:#3a1f1f;border:2px solid var(--red);padding:8px;font-size:18px;margin-bottom:10px;text-align:left}
 /* gacha */
 .card .rgem{position:absolute;right:5px;bottom:5px;width:10px;height:10px;background:var(--rc);transform:rotate(45deg);border:2px solid #000}
 .card.rr-rare{border-color:var(--cc);box-shadow:3px 3px 0 #000,0 0 0 2px var(--rc) inset}
@@ -283,6 +285,7 @@ img.mini{width:16px;height:16px;display:inline-block}
 
 <div id="home">
   <div class="home-card panel">
+    <div class="inapp hide" id="inappHint">Looks like an in-app browser. If joining fails, open this link in Chrome or Safari.</div>
     <div class="logo">BONAMAZE<small>a silly 8-bit card brawl · 2–4 players</small></div>
     <div class="hero-row" id="heroRow"></div>
     <div class="field"><label for="nameIn">YOUR NAME</label><input id="nameIn" maxlength="14" placeholder="Lord Bonkington" autocomplete="off"></div>
@@ -304,7 +307,7 @@ img.mini{width:16px;height:16px;display:inline-block}
 <div id="room" class="hide">
   <header class="bar panel">
     <div class="logo-s">BONAMAZE</div>
-    <span class="muted" style="font-size:18px">Room</span><span class="code" id="roomCode">----</span>
+    <span class="muted" style="font-size:18px">Room</span><span class="code" id="roomCode">----</span><span id="netDot" class="netdot"></span>
     <button id="copyBtn">Copy link</button>
     <span class="curbar hdr"></span><button id="collBtn2">Collection</button>
     <button id="muteBtn">♪ On</button>
@@ -487,23 +490,52 @@ const PeerNet = {
   ok: typeof Peer !== 'undefined',
   host(code, cb) {
     const peer = new Peer(PREFIX + code, { debug: 0 });
-    peer.on('open', () => cb.onReady());
-    peer.on('error', (e) => cb.onError(e.type || String(e)));
-    peer.on('disconnected', () => setTimeout(() => { try { if (!peer.destroyed) peer.reconnect(); } catch (e) {} }, 1000));
+    let ready = false;
+    peer.on('open', () => { if (!ready) { ready = true; cb.onReady(); } setNet('online'); });
+    peer.on('error', (e) => { const t = e.type || String(e); if (ready && /network|server|socket|disconnect/.test(t)) return setNet('reconnecting'); cb.onError(t); });
+    peer.on('disconnected', () => setNet('reconnecting'));
+    // Keep the room registered: background tabs / sleeping PCs drop the link to the matchmaking server.
+    const revive = () => { if (!peer.destroyed && peer.disconnected) { try { peer.reconnect(); } catch (e) {} } };
+    const keep = setInterval(() => { if (peer.destroyed) return clearInterval(keep); revive(); }, 3000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) revive(); });
+    addEventListener('online', revive);
     peer.on('connection', (c) => { const w = wrapConn(c); c.on('open', () => cb.onConn(w)); });
-    return { destroy() { try { peer.destroy(); } catch (e) {} } };
+    return { destroy() { clearInterval(keep); try { peer.destroy(); } catch (e) {} } };
   },
   connect(code, cb) {
-    const peer = new Peer({ debug: 0 }); let opened = false;
-    peer.on('open', () => {
-      const c = peer.connect(PREFIX + code, { reliable: true }); const w = wrapConn(c);
-      c.on('open', () => { opened = true; cb.onOpen(w); });
-      setTimeout(() => { if (!opened) cb.onError('timeout'); }, 15000);
-    });
-    peer.on('error', (e) => cb.onError(e.type || String(e)));
-    return { destroy() { try { peer.destroy(); } catch (e) {} } };
+    let attempt = 0, done = false, peer = null;
+    const fail = (t) => {
+      if (done) return;
+      try { peer.destroy(); } catch (e) {}
+      if (attempt < 3 && t !== 'browser-incompatible') { homeErr(`Knocking again… (try ${attempt + 1}/3)`); setTimeout(tryOnce, 1500); }
+      else { done = true; cb.onError(t); }
+    };
+    const tryOnce = () => {
+      attempt++; let opened = false;
+      peer = new Peer({ debug: 0 });
+      peer.on('open', () => {
+        const c = peer.connect(PREFIX + code, { reliable: true }); const w = wrapConn(c);
+        c.on('open', () => { opened = true; done = true; cb.onOpen(w); });
+        setTimeout(() => { if (!opened) fail('timeout'); }, 12000);
+      });
+      peer.on('error', (e) => { const t = e.type || String(e); if (done) return cb.onError(t); fail(t); });
+    };
+    tryOnce();
+    return { destroy() { done = true; try { peer.destroy(); } catch (e) {} } };
   },
 };
+function setNet(st) {
+  const el = document.getElementById('netDot'); if (!el) return;
+  el.className = 'netdot ' + st; el.title = st === 'online' ? 'Room is online' : 'Reconnecting to the matchmaking server…';
+  el.textContent = st === 'online' ? '● online' : '● reconnecting…';
+}
+function joinErrorText(t, code) {
+  if (t === 'peer-unavailable') return `Room ${code} not found. Check the code. If it's right, the host's game tab may be closed or asleep: ask them to bring the tab to the front, then try again.`;
+  if (t === 'timeout') return `Found room ${code} but couldn't link up. That's usually the network: try switching your phone between Wi-Fi and mobile data, or join the same Wi-Fi as the host.`;
+  if (t === 'browser-incompatible') return "This browser can't run the game. Open the link in Chrome or Safari (in-app browsers often can't).";
+  if (/network|server|socket/.test(t)) return "Can't reach the matchmaking server. Check your internet and try again.";
+  return 'Connection failed (' + t + ').';
+}
 // Same-browser test transport: add ?net=local and open several tabs.
 const LocalNet = {
   ok: typeof BroadcastChannel !== 'undefined',
@@ -600,7 +632,7 @@ function joinRoom(code) {
   if (S.net) S.net.destroy();
   const net = NET.connect(code, {
     onOpen(c) {
-      S.conn = c; S.mode = 'client'; S.code = code; S.net = net;
+      S.conn = c; S.mode = 'client'; S.code = code; S.net = net; setTimeout(() => setNet('online'), 50);
       c.onData((m) => {
         if (!m) return;
         if (m.t === 'state') { if (!S.v) enterRoom(); onState(m.v); }
@@ -612,13 +644,13 @@ function joinRoom(code) {
     onError(t) {
       if (S.v) { if (/network|server|socket|disconnect/i.test(t)) return; return lostHost(); }
       net.destroy(); busy(false);
-      homeErr(t === 'peer-unavailable' || t === 'timeout' ? `Room ${code} not found. Check the code, or the host closed their tab.` : 'Connection failed (' + t + ').');
+      homeErr(joinErrorText(t, code));
     },
   });
   S.net = net;
 }
 function lostHost() {
-  if (S.lost) return; S.lost = true;
+  if (S.lost) return; S.lost = true; setNet('reconnecting');
   ['#lobby', '#opps', '#me'].forEach((s) => $(s).classList.add('hide'));
   $('#table').classList.remove('hide'); $('#lastCard').innerHTML = '';
   $('#prompt').innerHTML = `<div class="big-banner" style="color:var(--red)">LOST CONNECTION</div><div id="promptText">The host left or the link dropped.</div>
@@ -1017,6 +1049,7 @@ $('#emotes').querySelectorAll('button').forEach((b) => b.onclick = () => { if (S
 document.addEventListener('pointerdown', () => SFX.unlock(), { once: true });
 const rc = (params.get('room') || '').toUpperCase();
 if (rc) { $('#codeIn').value = rc; $('#createBox').classList.add('hide'); $('#joinBtn').textContent = 'Join ' + rc; $('#joinBtn').classList.add('gold'); (S.name ? $('#joinBtn') : $('#nameIn')).focus(); }
+if (/FBAN|FBAV|Instagram|Line\/|Zalo|MicroMessenger|TikTok|; wv\)/i.test(navigator.userAgent)) $('#inappHint').classList.remove('hide');
 window.__bz = S;
 })();
 </script>
